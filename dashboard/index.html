@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แดชบอร์ดไฟฟ้าขัดข้อง กฟส.บ้านแพง และ กฟส.นาทม</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">⚡</div>
+  <div>
+    <h1>แดชบอร์ดไฟฟ้าขัดข้อง กฟส.บ้านแพง และ กฟส.นาทม</h1>
+    <p>การไฟฟ้าส่วนภูมิภาคจังหวัดนครพนม — <span id="headerDateRange">กำลังโหลด...</span> | เฉพาะ กฟส.บ้านแพง และ กฟส.นาทม · ต้นแบบแดชบอร์ดโดย นายศักดิ์อนันต์ แสนเมือง (MWM) · ปิดชื่อผู้ปฏิบัติงานตาม PDPA</p>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <!-- Location searchable dropdown -->
+  <div class="filter-group">
+    <label>การไฟฟ้าสาขา</label>
+    <div class="sd-wrap" id="sd-locationSel">
+      <div class="sd-display" tabindex="0">
+        <span class="sd-label">ทั้งหมด</span>
+        <span class="sd-arrow">▾</span>
+      </div>
+      <div class="sd-panel">
+        <input class="sd-search" type="text" placeholder="ค้นหา..." autocomplete="off">
+        <div class="sd-list"></div>
+      </div>
+      <select id="locationSel" style="display:none">
+        <option value="all">ทั้งหมด</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Date from -->
+  <div class="filter-group">
+    <label>วันที่เริ่มต้น</label>
+    <input type="date" id="dateFrom">
+  </div>
+
+  <!-- Date to -->
+  <div class="filter-group">
+    <label>วันที่สิ้นสุด</label>
+    <input type="date" id="dateTo">
+  </div>
+
+  <!-- Equipment code searchable dropdown -->
+  <div class="filter-group">
+    <label>รหัสอุปกรณ์</label>
+    <div class="sd-wrap" id="sd-equipSel">
+      <div class="sd-display" tabindex="0">
+        <span class="sd-label">ทั้งหมด</span>
+        <span class="sd-arrow">▾</span>
+      </div>
+      <div class="sd-panel">
+        <input class="sd-search" type="text" placeholder="ค้นหา..." autocomplete="off">
+        <div class="sd-list"></div>
+      </div>
+      <select id="equipSel" style="display:none">
+        <option value="">ทั้งหมด</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Transformer number searchable dropdown -->
+  <div class="filter-group">
+    <label>หมายเลขหม้อแปลง</label>
+    <div class="sd-wrap" id="sd-transSel">
+      <div class="sd-display" tabindex="0">
+        <span class="sd-label">ทั้งหมด</span>
+        <span class="sd-arrow">▾</span>
+      </div>
+      <div class="sd-panel">
+        <input class="sd-search" type="text" placeholder="ค้นหา..." autocomplete="off">
+        <div class="sd-list"></div>
+      </div>
+      <select id="transSel" style="display:none">
+        <option value="">ทั้งหมด</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Meter number searchable dropdown -->
+  <div class="filter-group">
+    <label>หมายเลขมิเตอร์</label>
+    <div class="sd-wrap" id="sd-meterSel">
+      <div class="sd-display" tabindex="0">
+        <span class="sd-label">ทั้งหมด</span>
+        <span class="sd-arrow">▾</span>
+      </div>
+      <div class="sd-panel">
+        <input class="sd-search" type="text" placeholder="ค้นหา..." autocomplete="off">
+        <div class="sd-list"></div>
+      </div>
+      <select id="meterSel" style="display:none">
+        <option value="">ทั้งหมด</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="reset-btn" onclick="resetFilters()">↺ รีเซ็ต</button>
+</div>
+
+<div class="main">
+  <!-- KPI -->
+  <div class="kpi-row">
+    <div class="kpi k1" title="จำนวนเหตุการณ์ทั้งหมดที่ตรงกับเงื่อนไขฟิลเตอร์ปัจจุบัน">
+      <div class="kpi-label">เหตุการณ์ทั้งหมด</div>
+      <div class="kpi-val" id="kpiTotal">—</div>
+      <div class="kpi-sub">รายการที่กรอง</div>
+    </div>
+    <div class="kpi k2" title="ค่าเฉลี่ยระยะเวลาไฟฟ้าดับต่อครั้ง (นาที)">
+      <div class="kpi-label">เฉลี่ยระยะเวลาดับ</div>
+      <div class="kpi-val" id="kpiAvgOut">—</div>
+      <div class="kpi-sub">นาที/ครั้ง</div>
+    </div>
+    <div class="kpi k3" title="ผลรวมผู้ใช้ไฟฟ้าที่ได้รับผลกระทบทั้งหมด">
+      <div class="kpi-label">ผู้ใช้กระทบรวม</div>
+      <div class="kpi-val" id="kpiUsers">—</div>
+      <div class="kpi-sub">ราย</div>
+    </div>
+    <div class="kpi k4" title="ค่าเฉลี่ยเวลาแก้ไขเหตุการณ์ต่อครั้ง (นาที)">
+      <div class="kpi-label">เฉลี่ยเวลาแก้ไข</div>
+      <div class="kpi-val" id="kpiAvgFix">—</div>
+      <div class="kpi-sub">นาที/ครั้ง</div>
+    </div>
+  </div>
+
+  <!-- Row 1: cause + location donut + monthly bar -->
+  <div class="grid3">
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--accent4)"></span>สาเหตุที่พบบ่อย</div>
+      <div class="bar-chart" id="causeBars"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--accent2)"></span>สัดส่วนตามสาขา</div>
+      <canvas id="donutChart" width="260" height="260" style="margin:0 auto;display:block;max-width:240px;height:auto"></canvas>
+      <div id="donutLegend" style="display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;margin-top:12px;font-size:11px"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--accent3)"></span>จำนวนเหตุการณ์รายเดือน</div>
+      <div id="monthBar" style="display:flex;align-items:flex-end;justify-content:center;gap:4px;height:220px;padding:10px 6px 0"></div>
+    </div>
+  </div>
+
+  <!-- Row 2: equipment hotspot + transformer + weather -->
+  <div class="grid4">
+
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--accent)"></span>รหัสอุปกรณ์ที่เกิดเหตุบ่อย (Top 10)</div>
+      <div class="bar-chart" id="equipBars"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:#a78bfa"></span>หมายเลขหม้อแปลงที่เกิดเหตุบ่อย (Top 10)</div>
+      <div class="bar-chart" id="transBars"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:#4dd0e1"></span>หมายเลขมิเตอร์ที่เกิดเหตุบ่อย (Top 10)</div>
+      <div class="bar-chart" id="meterBars"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--muted)"></span>สภาพอากาศขณะเกิดเหตุ</div>
+      <div class="bar-chart" id="weatherBars"></div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <div class="card-title"><span class="dot" style="background:var(--accent2)"></span>รายละเอียดเหตุการณ์</div>
+    <div class="count-result" id="tableCount"></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortTable('ลำดับ')" style="cursor:pointer" title="เรียงลำดับ"># ⇅</th>
+            <th onclick="sortTable('date_iso')" style="cursor:pointer" title="เรียงตามวันที่">วันที่ ⇅</th>
+            <th>เวลา</th>
+            <th onclick="sortTable('ระยะเวลาดับ_นาที')" style="cursor:pointer" title="เรียงตามระยะเวลา">ดับ (นาที) ⇅</th>
+            <th onclick="sortTable('สถานที่')" style="cursor:pointer" title="เรียงตามสาขา">สาขา ⇅</th>
+            <th>รหัสอุปกรณ์</th>
+            <th onclick="sortTable('จำนวนผชฟ_กระทบ')" style="cursor:pointer" title="เรียงตามผู้กระทบ">ผู้กระทบ ⇅</th>
+            <th onclick="sortTable('สาเหตุ')" style="cursor:pointer" title="เรียงตามสาเหตุ">สาเหตุ ⇅</th>
+            <th>สภาพอากาศ</th>
+            <th onclick="sortTable('เวลาแก้ไข_นาที')" style="cursor:pointer" title="เรียงตามเวลาแก้ไข">แก้ไข (นาที) ⇅</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+
+<style>
+/* ── Searchable Dropdown ── */
+.sd-wrap {
+  position: relative;
+  min-width: 160px;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 13px;
+  user-select: none;
+}
+.sd-display {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 6px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 33px;
+  transition: border-color .15s;
+}
+.sd-display:focus,
+.sd-wrap.open .sd-display { outline: none; border-color: var(--accent); }
+.sd-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sd-label.selected { color: var(--text); font-weight: 500; }
+.sd-label:not(.selected) { color: var(--muted); }
+.sd-arrow { font-size: 10px; color: var(--muted); flex-shrink: 0; transition: transform .2s; }
+.sd-wrap.open .sd-arrow { transform: rotate(180deg); }
+
+.sd-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 100%;
+  width: max-content;
+  max-width: 320px;
+  background: #1e2235;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  z-index: 9999;
+  overflow: hidden;
+}
+.sd-wrap.open .sd-panel { display: block; }
+
+.sd-search {
+  width: 100%;
+  background: var(--surface);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+}
+.sd-search::placeholder { color: var(--muted); }
+
+.sd-list {
+  max-height: 220px;
+  overflow-y: auto;
+}
+.sd-list::-webkit-scrollbar { width: 4px; }
+.sd-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.sd-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12.5px;
+  transition: background .1s, color .1s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sd-item:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+.sd-item.active { background: rgba(255,183,77,0.12); color: var(--accent); font-weight: 600; }
+.sd-item.no-result { color: var(--muted); font-style: italic; cursor: default; pointer-events: none; }
+</style>
+
+<script>
+// ── capture prototype descriptor ครั้งเดียว ก่อน initSearchableDropdown ──
+const _origSelectValueDescriptor = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+
+// ── Searchable Dropdown Engine ──
+// ใช้ร่วมกับ <select> ที่ซ่อนอยู่ข้างใน — app.js อ่าน select.value ได้เหมือนเดิม
+
+function initSearchableDropdown(wrapId) {
+  const wrap   = document.getElementById(wrapId);
+  const sel    = wrap.querySelector('select');
+  const display= wrap.querySelector('.sd-display');
+  const label  = wrap.querySelector('.sd-label');
+  const panel  = wrap.querySelector('.sd-panel');
+  const search = wrap.querySelector('.sd-search');
+  const list   = wrap.querySelector('.sd-list');
+
+  function getOptions() {
+    return Array.from(sel.options).map(o => ({ value: o.value, text: o.textContent.trim() }));
+  }
+
+  function renderList(q) {
+    const opts = getOptions();
+    const filtered = q ? opts.filter(o => o.text.toLowerCase().includes(q.toLowerCase())) : opts;
+    if (!filtered.length) {
+      list.innerHTML = '<div class="sd-item no-result">ไม่พบรายการ</div>';
+      return;
+    }
+    list.innerHTML = filtered.map(o => `
+      <div class="sd-item${o.value === sel.value ? ' active' : ''}"
+           data-val="${o.value.replace(/"/g,'&quot;')}">${o.text}</div>`).join('');
+    list.querySelectorAll('.sd-item:not(.no-result)').forEach(item => {
+      item.addEventListener('click', () => {
+        // toggle: คลิกซ้ำ active item → reset กลับ default
+        const isReset = item.dataset.val === sel.value && item.dataset.val !== '' && item.dataset.val !== 'all';
+        const newVal  = isReset ? (sel.options[0]?.value ?? '') : item.dataset.val;
+        sel.value = newVal;
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+        syncDisplay();
+        close();
+      });
+    });
+  }
+
+  function syncDisplay() {
+    const cur = Array.from(sel.options).find(o => o.value === sel.value);
+    if (cur) {
+      label.textContent = cur.textContent.trim().replace(/\s*\(\d+\)$/, '') || 'ทั้งหมด';
+      label.classList.toggle('selected', sel.value !== '' && sel.value !== 'all');
+    }
+  }
+
+  function open() {
+    document.querySelectorAll('.sd-wrap.open').forEach(w => { if(w!==wrap) w.classList.remove('open'); });
+    wrap.classList.add('open');
+    search.value = '';
+    renderList('');
+    search.focus();
+  }
+
+  function close() {
+    wrap.classList.remove('open');
+    search.value = '';
+  }
+
+  display.addEventListener('click', () => wrap.classList.contains('open') ? close() : open());
+  display.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') { e.preventDefault(); open(); } });
+  search.addEventListener('input', () => renderList(search.value));
+  search.addEventListener('keydown', e => {
+    if(e.key==='Escape') close();
+    if(e.key==='Enter') {
+      const first = list.querySelector('.sd-item:not(.no-result)');
+      if(first) first.click();
+    }
+  });
+
+  document.addEventListener('click', e => {
+    if(!wrap.contains(e.target)) close();
+  }, true);
+
+  // patch value setter บน instance นี้เท่านั้น — ใช้ _origSelectValueDescriptor ที่ capture ไว้ก่อน
+  let _val = sel.value;
+  Object.defineProperty(sel, 'value', {
+    get() { return _val; },
+    set(v) {
+      _val = v;
+      _origSelectValueDescriptor.set.call(sel, v);
+      syncDisplay();
+    },
+    configurable: true
+  });
+
+  new MutationObserver(() => {
+    syncDisplay();
+    if(wrap.classList.contains('open')) renderList(search.value);
+  }).observe(sel, { childList: true });
+
+  syncDisplay();
+  return { syncDisplay, renderList };
+}
+
+// รอให้ app.js เรียก init() เสร็จ (loading div ถูกลบ) แล้วค่อย setup
+function setupAllDropdowns() {
+  ['sd-locationSel','sd-equipSel','sd-transSel','sd-meterSel'].forEach(initSearchableDropdown);
+}
+
+// init() ใน app.js ลบ #loading แล้วเรียก init() → options พร้อมแล้ว → setup
+const _sdObserver = new MutationObserver((_, obs) => {
+  if(!document.getElementById('loading')) {
+    obs.disconnect();
+    setTimeout(setupAllDropdowns, 0); // รอ 1 tick ให้ rebuildCodeSelects เสร็จ
+  }
+});
+_sdObserver.observe(document.body, { childList: true, subtree: true });
+</script>
+
+</body>
+</html>
